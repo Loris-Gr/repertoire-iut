@@ -1,5 +1,6 @@
 main, h1{ padding: 1em;}
-
+h1{ color: orangered}
+li { list-style-type : None}
 html{
   background-color: lightgray;
 }
@@ -11,7 +12,8 @@ img{
 
 main p{
   background-color: gainsboro;
-}
+   color: orangered}
+
 
 main li{
   border: thin solid black;
