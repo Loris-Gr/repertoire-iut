@@ -1,1 +1,1 @@
-Capture de la partie B.
+Capture d'écran des questions de la partie B.
