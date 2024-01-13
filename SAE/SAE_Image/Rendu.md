@@ -196,3 +196,11 @@ Je sauvegarde mon fichier modifié ensuite.
 
 
 ### B5 ) 
+Pour cette question j'ai utilisé cacher et trouver (fournis) que j'utilises plus tard. Le début est comme pour les questions précédentes mis à part que j'ouvre la deuxième image que j'implémente dans une variable que je nomme "i_noir". Après cela je récupère R (rouge), V (vert et B (bleu), j'utilise ensuite la formule fournis sur R afin de l'obtenir en pair. Ensuite je fait un try et un except pour récupérer le pixel sur i_noir si l'on peut et sinon je le mets blanc. Si mon pixel récupéré est noir j'utilise la fonction cachée qui ajoute 1 sur le pixel rouge et sinon je n'ajoute pas.
+Je sauvegarde mon fichier modifié ensuite.
+
+Pour récupérer l'image cachée je crée une image vierge en plus de réaliser le début comme pour les autres questions. Ensuite je récupère R, V et B, j'exécute trouver sur R et s'il renvoie 1 (si le pixel est donc noir) je mets un pixel noir sur ma nouvelle image et sinon (si le pixel est blanc) je mets un pixels blanc sur mon image vierge.
+Je sauvegarde mon fichier modifié ensuite.
+
+![](./capture_partie_B/B5.png)
+
