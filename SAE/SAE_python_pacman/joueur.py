@@ -24,7 +24,8 @@ def Joueur(couleur, nom, nb_points, nb_faux_mvt, pos_pacman, pos_fantome, objets
     Returns:
         dict: un dictionnaire représentant le joueur
     """
-    pass
+    joueur = {"couleur": couleur, "nom": nom, "nb_points": nb_points, "nb_faux_mvt": nb_faux_mvt, "pos_pacman": pos_pacman,"pos_fantome": pos_fantome, "objets": objets}
+    return joueur
 
 def joueur_from_str(description):
     """créer un joueur à partir d'un chaine de caractères qui contient
@@ -38,7 +39,8 @@ def joueur_from_str(description):
     Returns:
         dict: le joueur ayant les caractéristiques décrite dans la chaine.
     """
-    pass
+    joueur=description.split(";")
+    return Joueur(joueur[0],joueur[10],int(joueur[1]),int(joueur[2]),(int(joueur[3]),int(joueur[4])),(int(joueur[5]),int(joueur[6])),{const.GLOUTON:int(joueur[7]),const.IMMOBILITE:int(joueur[8]),const.PASSEMURAILLE:int(joueur[9])})
 
 def get_couleur(joueur):
     """retourne la couleur du joueur
@@ -49,7 +51,7 @@ def get_couleur(joueur):
     Returns:
         str: une lettre indiquant la couleur du joueur
     """
-    pass
+    return joueur["couleur"]
 
 
 def get_nom(joueur):
@@ -61,7 +63,7 @@ def get_nom(joueur):
     Returns:
         str: le nom du joueur
     """
-    pass
+    return joueur["nom"]
 
 
 def get_nb_points(joueur):
@@ -80,7 +82,7 @@ def get_nb_faux_mvt(joueur):
     Returns:
         int: le nombre de faux mouvements autorisés du joueur
     """
-    pass
+    return joueur["nb_faux_mvt"]
 
 def get_objets(joueur):
     """retourne la liste des objets possédés par le joueur
@@ -89,7 +91,11 @@ def get_objets(joueur):
     Returns:
         list(int): la liste des objets possédés par le joueur
     """
-    pass
+    liste_objets = []
+    for (objet,duree) in joueur["objets"].items() : # on parcours le tuple (objet,duree)
+        if duree > 0 :                              # s'il y a encore de la durée restante
+            liste_objets.append(objet)
+    return liste_objets
 
 def get_duree(joueur,objet):
     """retourne la duree de vie de l'objet possédé par le joueur
@@ -100,7 +106,10 @@ def get_duree(joueur,objet):
         int: un entier indiquant la durée de vie l'objet possédé par le joueur
             0 indique que le joueur n'a pas l'objet ou que celui-ci a une durée de vie de 0
     """
-    pass
+    if objet in joueur["objets"] :
+        return joueur["objets"][objet]
+    return 0
+
 
 def get_pos_pacman(joueur):
     """retourne la position du pacman du joueur. ATTENTION c'est la position stockée dans le
@@ -110,7 +119,7 @@ def get_pos_pacman(joueur):
     Returns:
         tuple: une paire d'entiers indiquant la position du pacman du joueur.
     """
-    pass
+    return joueur["pos_pacman"]
 
 def get_pos_fantome(joueur):
     """retourne la position du fantome du joueur. ATTENTION c'est la position stockée dans le
@@ -120,7 +129,7 @@ def get_pos_fantome(joueur):
     Returns:
         tuple: une paire d'entiers indiquant la position du fantome du joueur.
     """
-    pass
+    return joueur["pos_fantome"]
 
 def set_pos_pacman(joueur, pos):
     """met à jour la position du pacman du joueur
@@ -138,7 +147,7 @@ def set_pos_fantome(joueur, pos):
         joueur (dict): le joueur considéré
         pos (tuple): une paire d'entiers (lin,col) indiquant la position du joueur
     """
-    pass
+    joueur["pos_fantome"] = pos
 
 def add_points(joueur, quantite):
     """ modifie le nombre de points du joueur.
@@ -150,7 +159,8 @@ def add_points(joueur, quantite):
     Returns:
         int: le nouveau nombre de points du joueur
     """
-    pass
+    joueur["nb_points"] += quantite
+    return joueur["nb_points"]
 
 def faux_mouvement(joueur):
     """Enlève 1 au nombre de faux mouvements autorisés pour le joueur
@@ -160,7 +170,8 @@ def faux_mouvement(joueur):
     Returns:
         int: le nombre de faux mouvements autorisés restants
     """
-    pass
+    joueur["nb_faux_mvt"]-=1
+    return joueur["nb_faux_mvt"]
 
 def reinit_faux_mouvements(joueur):
     """Réinitialise le nombre de faux mouvements autorisés pour le joueur
@@ -168,7 +179,7 @@ def reinit_faux_mouvements(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    pass
+    joueur["nb_faux_mvt"] = 4
 
 
 def ajouter_objet(joueur, objet):
@@ -180,7 +191,10 @@ def ajouter_objet(joueur, objet):
         joueur (dict): le joueur considéré
         objet (int): l'objet considéré
     """
-    pass
+    (quantite_point, duree) = const.PROP_OBJET[objet]     # on parcours le tuple (objet,duree)
+    add_points(joueur, quantite_point)
+    if objet in joueur['objets'] :
+        joueur['objets'][objet] += duree
 
 
 def maj_duree(joueur):
@@ -190,7 +204,9 @@ def maj_duree(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    pass
+    for (objet,duree) in joueur["objets"].items() :   # on parcours le tuple (objet,duree)
+        if duree > 0 :
+            joueur["objets"][objet] -= 1
 
 # A NE PAS DEMANDER
 def joueur_2_str(joueur,separateur=";"):
