@@ -4,11 +4,11 @@ import plateau
 import case
 class test_case(unittest.TestCase):  
     def setUp(self):
-        with open("cartes/test1.txt") as fic:
+        with open("source/cartes/test1.txt") as fic:
             self.plateau1=fic.read()
-        with open("cartes/test2.txt") as fic:
+        with open("source/cartes/test2.txt") as fic:
             self.plateau2=fic.read()
-        with open("cartes/test3.txt") as fic:
+        with open("source/cartes/test3.txt") as fic:
             self.plateau3=fic.read()
 
 
@@ -81,27 +81,27 @@ class test_case(unittest.TestCase):
                             str(fantomes)
         return None
 
-    def test_Plateau(self):
-        res=self.verif(self.plateau1,plateau.Plateau(self.plateau1))
+    def test_plateau(self):
+        res=self.verif(self.plateau1,plateau.plateau(self.plateau1))
         self.assertIsNone(res,res)
-        res=self.verif(self.plateau2,plateau.Plateau(self.plateau2))
+        res=self.verif(self.plateau2,plateau.plateau(self.plateau2))
         self.assertIsNone(res,res)
-        res=self.verif(self.plateau3,plateau.Plateau(self.plateau3))
+        res=self.verif(self.plateau3,plateau.plateau(self.plateau3))
         self.assertIsNone(res,res)
 
     def test_pos_nord(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.pos_nord(p1,(0,12))
         self.assertEqual(res,
                          (plateau.get_nb_lignes(p1)-1,12),
                          "La position au nord de la case (0,12) devrait être ("+\
                             str(plateau.get_nb_lignes(p1)-1)+",12)"+\
                             " alors que vous retournez "+str(res))
-        res=plateau.pos_nord(p1,(28,0))
-        self.assertEqual(res,(27,0),
+        res=plateau.pos_nord(p1,(18,0))
+        self.assertEqual(res,(17,0),
                          "La position au nord de la case (28,0) devrait être (27,0)"+\
                             " alors que vous retournez "+str(res))
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         res=plateau.pos_nord(p2,(0,5))
         self.assertEqual(res,
                          (plateau.get_nb_lignes(p2)-1,5),
@@ -114,7 +114,7 @@ class test_case(unittest.TestCase):
                             " alors que vous retournez "+str(res))
 
     def test_pos_sud(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.pos_sud(p1,(plateau.get_nb_lignes(p1)-1,10))
         self.assertEqual(res,
                          (0,10),
@@ -125,7 +125,7 @@ class test_case(unittest.TestCase):
         self.assertEqual(res,(15,0),
                          "La position au sud de la case (14,0) devrait être (15,0)"+\
                             " alors que vous retournez "+str(res))
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         res=plateau.pos_sud(p2,(plateau.get_nb_lignes(p2)-1,7))
         self.assertEqual(res,
                          (0,7),
@@ -139,7 +139,7 @@ class test_case(unittest.TestCase):
                             " alors que vous retournez "+str(res))
 
     def test_pos_ouest(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.pos_ouest(p1,(12,0))
         self.assertEqual(res,
                          (12,plateau.get_nb_colonnes(p1)-1),
@@ -150,7 +150,7 @@ class test_case(unittest.TestCase):
         self.assertEqual(res,(0,27),
                          "La position à l'ouest de la case (0,28) devrait être (0,27)"+\
                             " alors que vous retournez "+str(res))
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         res=plateau.pos_ouest(p2,(5,0))
         self.assertEqual(res,
                          (5,plateau.get_nb_colonnes(p2)-1),
@@ -163,7 +163,7 @@ class test_case(unittest.TestCase):
                             " alors que vous retournez "+str(res))
 
     def test_pos_est(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.pos_est(p1,(15,plateau.get_nb_colonnes(p1)-1))
         self.assertEqual(res,
                          (15,0),
@@ -174,7 +174,7 @@ class test_case(unittest.TestCase):
         self.assertEqual(res,(0,27),
                          "La position à l'est de la case (0,26) devrait être (0,27)"+\
                             " alors que vous retournez "+str(res))
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         res=plateau.pos_est(p2,(0,5))
         self.assertEqual(res,
                          (0,6),
@@ -187,7 +187,7 @@ class test_case(unittest.TestCase):
                             ") devrait être (0,0) alors que vous retournez "+str(res))
 
     def test_pos_arrivee(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         nb_lig=plateau.get_nb_lignes(p1)
         nb_col=plateau.get_nb_colonnes(p1)
         directions="NSOE"
@@ -205,7 +205,7 @@ class test_case(unittest.TestCase):
 
 
     def test_enlever_pacman(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.enlever_pacman(p1,'A',(1,2))
         self.assertTrue(res,"Le pacman A devrait être sur la case (1,2) du plateau test1.txt")
         self.assertFalse('A' in case.get_pacmans(plateau.get_case(p1,(1,2))),
@@ -220,7 +220,7 @@ class test_case(unittest.TestCase):
                     "Le pacman B ne se trouve pas sur la case (1,1) du plateau 1 or vous le détectez")
 
     def test_enlever_fantome(self):
-        p1=plateau.Plateau(self.plateau1)
+        p1=plateau.plateau(self.plateau1)
         res=plateau.enlever_fantome(p1,'a',(7,5))
         self.assertTrue(res,"Le fantome a devrait être sur la case (7,5) du plateau test1.txt")
         self.assertFalse('a' in case.get_fantomes(plateau.get_case(p1,(7,5))),
@@ -241,7 +241,7 @@ class test_case(unittest.TestCase):
 
    
     def test_prendre_objet(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         res=plateau.prendre_objet(p2,(1,1))
         self.assertEqual(res,const.VITAMINE,
                          "La case (1,1) du plateau test2.txt contient une vitamine "+\
@@ -287,47 +287,47 @@ class test_case(unittest.TestCase):
                               )
 
     def test_deplacer_pacman(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,1),(1,0),'A','O')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,1),None,'A','E')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,1),(2,1),'A','S')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,1),None,'A','N')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,2),None,'A','N',False)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,2),None,'A','E',False)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(8,6),(8,7),'C','E')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(8,6),(8,5),'C','O')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(8,6),(7,6),'C','N')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(8,6),None,'C','S')
         
     def test_deplacer_pacman_passemuraille(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,8),(1,7),'B','O',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,8),(1,9),'B','E',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,8),(0,8),'B','N',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,8),(2,8),'B','S',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,2),None,'B','N',False,passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(1,2),None,'B','E',False,passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(6,6),(6,7),'D','E',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(6,6),(6,5),'D','O',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(6,6),(5,6),'D','N',passemuraille=True)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement(p2,(6,6),(7,6),'D','S',passemuraille=True)
 
     def verif_deplacement_f(self,plat,pos_d,pos_a,fantome,dir,present=True):
@@ -357,30 +357,30 @@ class test_case(unittest.TestCase):
                          " or dans votre implémentation "+fantome+" n'est pas dans cette case"
                               )
 
-    def test_deplacer_pacman(self):
-        p2=plateau.Plateau(self.plateau2)
+    def test_deplacer_fantome(self):
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,9),(1,8),'c','O')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,9),(1,0),'c','E')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,9),None,'c','S')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,9),None,'c','N')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,2),None,'c','N',False)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(1,2),None,'c','E',False)
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(6,4),None,'d','E')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(6,4),None,'d','O')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(6,4),(5,4),'d','N')
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         self.verif_deplacement_f(p2,(6,4),(7,4),'d','S')
 
     def test_directions_possibles(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         attendus={(0,0):{"S"},(5,6):{"N","S","E","O"},(7,8):set(),
                  (8,5):{'O','E'},(5,0):{'O','E'},(7,1):{"N","S"}}
         for pos in attendus:
@@ -394,15 +394,9 @@ class test_case(unittest.TestCase):
                          "Sur le plateau test2.txt, l'ensemble des directions possibles à partir de "+\
                                 " (3,2) est NSEO or votre fonction retourne "+
                                 str(res))
-    def verif_distances(self,attendu, obtenu,cle):
-        attendu[cle].sort()
-        obtenu[cle].sort()
-        self.assertEqual(obtenu[cle],attendu[cle],
-                         "Les distances pour les "+cle)
-
-        self.assertEqual(res['objets'])
+ 
     def test_analyse_plateau(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         pos=(5,6)
         dist=5
         
@@ -424,7 +418,7 @@ class test_case(unittest.TestCase):
                             "votre fonction retourne "+str(res)+ " au lieu de None")
 
     def test_prochaine_intersection(self):
-        p2=plateau.Plateau(self.plateau2)
+        p2=plateau.plateau(self.plateau2)
         attendus={'N':1,'S':2,'E':4,'O':4}
         pos=(5,6)
         for dir in attendus:
