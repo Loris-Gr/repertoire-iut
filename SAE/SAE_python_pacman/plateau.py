@@ -14,7 +14,7 @@ import random
 plat= {'nb_lignes' : 2, 'nb_colonnes' : 2,
     'valeurs':[{"mur": False, "objet" : const.AUCUN, "pacmans_presents": {'A'}, "fantomes_presents": None},
                 {"mur": False, "objet" : const.AUCUN, "pacmans_presents": None, "fantomes_presents": None}, 
-                {"mur": False, "objet" : const.AUCUN, "pacmans_presents": None, "fantomes_presents": None},
+                {"mur": False, "objet" : '.', "pacmans_presents": None, "fantomes_presents": None},
                  {"mur": False, "objet" : const.AUCUN, "pacmans_presents": None, "fantomes_presents": {'a'}}],
                         "nb_pacman":1,"nb_fantomes":1, 
                         "pacmans" : [("A",(0,0))],
@@ -437,33 +437,33 @@ def deplacer_fantome(plateau, fantome, pos, direction):
 #---------------------------------------------------------#
     
 
-"""def inondation(plateau,position):
-    calque={"nb_lignes":plateau["nb_lignes"],"nb_colonnes":plateau["nb_colonnes"],"valeurs":plateau["valeurs"]}
-    set_case(calque,position,0)
+
+def inondation(plateau,position):
+    calque=[]
+    for _ in range(plateau["nb_lignes"]):
+        calque.append([None]*plateau["nb_colonnes"])
+    calque[position[0]][position[1]]=1
     fin=False
-    num=1
     while not fin:
         fin=True
-        for i in range(calque["nb_lignes"]):
-            for j in range(calque["nb_colonnes"]):
-                if type(get_case(calque,(i,j))) is int:
-                    num=get_case(calque,(i,j))+1
+        for i in range(len(calque)):
+            for j in range(len(calque[0])):
+                if calque[i][j] is not None and get_case(plateau,(i,j))!="#":
+                    num=calque[i][j]+1
                     dir_pos=directions_possibles(plateau,(i,j))
+                    if len(dir_pos)==0:
+                        return None
                     voisins=[]
                     for dire in dir_pos:
                         voisins.append(pos_arrivee(plateau,(i,j),dire))
                     for voisin in voisins:
-                        if type(get_case(calque,voisin)) is dict:
-                            set_case(calque,voisin,num)
+                        if calque[voisin[0]][voisin[1]] is None or calque[voisin[0]][voisin[1]]>num :
+                            calque[voisin[0]][voisin[1]]=num
                             fin=False
-    return calque"""
+    return calque
 
-def inondation(plateau,position):
-    res=[]
-    for _ in range(plateau["nb_lignes"]):
-        
 
-print(inondation(plat,(0,0)))
+
 
 
 def analyse_plateau(plateau, pos, direction, distance_max):
@@ -485,26 +485,44 @@ def analyse_plateau(plateau, pos, direction, distance_max):
             S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
             la fonction retourne None
     """ 
-    res={}
+    res=dict()
     positions_bonus=[]
     for i in range(plateau["nb_lignes"]):
         for j in range(plateau["nb_colonnes"]):
             case_en_cours=get_case(plateau,(i,j))
             if case_en_cours["objet"] is not const.AUCUN:
-                positions_bonus.append(((i,j),case_en_cours["objet"],"objets"))
+                for nom in case_en_cours["objet"]:
+                    identite=nom
+                positions_bonus.append(((i,j),identite,"objets"))
+            
             if case_en_cours["pacmans_presents"] is not None:
-                positions_bonus.append(((i,j),case_en_cours["pacmans_presents"],"pacmans"))
+                for nom in case_en_cours["pacmans_presents"]:
+                    identite=nom
+                positions_bonus.append(((i,j),identite,"pacmans"))
+            
             if case_en_cours["fantomes_presents"] is not None:
-                positions_bonus.append(((i,j),case_en_cours["fantomes_presents"],"fantomes"))
+                for nom in case_en_cours["fantomes_presents"]:
+                    identite=nom
+                positions_bonus.append(((i,j),identite,"fantomes"))
+    
+    
     pos=pos_arrivee(plateau,pos,direction)
+    if case.est_mur(get_case(plateau,pos)):
+        return None
     for bonus in positions_bonus:
         calque=inondation(plateau,pos)
-        if get_case(calque,bonus[0])<=distance_max:
+        if calque is None:
+            return None
+        if calque[bonus[0][0]][bonus[0][1]]<=distance_max:
             try:
-                res[bonus[2]]+=(get_case(get_case(calque,bonus[0])),bonus[1])
+                res[bonus[2]].append((int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1])))
             except:
-                res[bonus[2]]=(get_case(get_case(calque,bonus[0])),bonus[1])
+                res[bonus[2]]=[(int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1]))]
+    for cle in res.values():
+        cle.sort()
     return res
+
+
 
 
 def direction_inverse(direction):
