@@ -259,8 +259,6 @@ def plateau(la_chaine, complet=True):
         poser_fantome(plateau,fan[0],fan[1])
 
     return plateau
-
-carte=plateau(donne_contenu("carte.txt"))      # pour les tests
     
 
 def enlever_pacman(plateau, pacman, pos):
@@ -361,7 +359,7 @@ def directions_possibles(plateau,pos,passemuraille=False):
               à partir de pos
     """
     direction_possible = ""
-    for direction in 'NSEO':
+    for direction in const.DIRECTIONS:
         pos_ar = pos_arrivee(plateau, pos, direction)
         if pos_ar is not None:
             if not(case.est_mur(get_case(plateau,pos_ar))) or passemuraille:
@@ -439,6 +437,15 @@ def deplacer_fantome(plateau, fantome, pos, direction):
 
 
 def inondation(plateau,position):
+    """
+    fonction qui viens donner la distance avec toutes les cases depuis la position
+    Args:
+        plateau (dict): dico représentant le plateau
+        position (tuple): position en cours
+
+    Returns:
+        list: retourne le calque du plateau
+    """    
     calque=[]
     for _ in range(plateau["nb_lignes"]):
         calque.append([None]*plateau["nb_colonnes"])
@@ -448,14 +455,16 @@ def inondation(plateau,position):
         fin=True
         for i in range(len(calque)):
             for j in range(len(calque[0])):
-                if calque[i][j] is not None and get_case(plateau,(i,j))!="#":
+                if calque[i][j] is not None:
                     num=calque[i][j]+1
                     dir_pos=directions_possibles(plateau,(i,j))
                     if len(dir_pos)==0:
                         return None
                     voisins=[]
                     for dire in dir_pos:
-                        voisins.append(pos_arrivee(plateau,(i,j),dire))
+                        if get_case(plateau,pos_arrivee(plateau,(i,j),dire))!="#":
+                            voisins.append(pos_arrivee(plateau,(i,j),dire))
+
                     for voisin in voisins:
                         if calque[voisin[0]][voisin[1]] is None or calque[voisin[0]][voisin[1]]>num :
                             calque[voisin[0]][voisin[1]]=num
@@ -509,15 +518,14 @@ def analyse_plateau(plateau, pos, direction, distance_max):
     pos=pos_arrivee(plateau,pos,direction)
     if case.est_mur(get_case(plateau,pos)):
         return None
+    calque=inondation(plateau,pos)
     for bonus in positions_bonus:
-        calque=inondation(plateau,pos)
-        if calque is None:
-            return None
-        if calque[bonus[0][0]][bonus[0][1]]<=distance_max:
-            try:
-                res[bonus[2]].append((int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1])))
-            except:
-                res[bonus[2]]=[(int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1]))]
+        if calque[bonus[0][0]][bonus[0][1]] is not None:
+            if calque[bonus[0][0]][bonus[0][1]]<=distance_max:
+                try:
+                    res[bonus[2]].append((int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1])))
+                except:
+                    res[bonus[2]]=[(int(calque[bonus[0][0]][bonus[0][1]]),str(bonus[1]))]
     for cle in res.values():
         cle.sort()
     return res
