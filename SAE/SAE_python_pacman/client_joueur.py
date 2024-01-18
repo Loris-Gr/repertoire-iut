@@ -22,6 +22,35 @@ import joueur
 from math import *
 prec='X'
 
+def calcul_possibilite(p_plateau, ligne, colonne):
+    possibilite_p = []
+    possibilite_o = []
+    possibilite_f = []
+    for direction in const.DIRECTIONS:
+        plan_ensemble=plateau.analyse_plateau(p_plateau,(ligne, colonne),direction,100)
+        #if plan_ensemble["pacmans"][0][1].upper()!=nom:
+        if  plan_ensemble is None or "pacmans" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["pacmans"])) :
+                possibilite_p.append((plan_ensemble["pacmans"][i][0],plan_ensemble["pacmans"][i][1],direction))
+
+        if plan_ensemble is None or "objets" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["objets"])) :
+                possibilite_o.append((plan_ensemble["objets"][i][0], plan_ensemble["objets"][i][1], direction))
+            
+        if plan_ensemble is None or "fantomes" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["fantomes"])) :
+                possibilite_f.append((plan_ensemble["fantomes"][i][0], plan_ensemble["fantomes"][i][1],direction))
+                
+    return (possibilite_p, possibilite_o, possibilite_f)
+
+
+
 def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     """ Cette fonction permet de calculer les deux actions du joueur de couleur ma_couleur
         en fonction de l'état du jeu décrit par les paramètres. 
@@ -57,95 +86,95 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     return dir_p+dir_f"""
 
     # Création des possibilités
-
-    possibilite_p = []
-    possibilite_o = []
-    possibilite_f = []
-    les_joueurs=les_joueurs.split('\n') 
-    for l in les_joueurs:
+    
+    #possibilite pacman
+    les_joueurs_p=les_joueurs.split('\n') 
+    for l in les_joueurs_p:
         l=l.split(";")
         if l[0]==ma_couleur:
-            (ma_ligne,ma_colonne,nom)=(int(l[5]),int(l[6]),l[-1])
-
-    for direction in const.DIRECTIONS:
-        plan_ensemble=plateau.analyse_plateau(le_plateau,(ma_ligne,ma_colonne),direction,100)
-        #if plan_ensemble["pacmans"][0][1].upper()!=nom:
-        if  plan_ensemble is None or "pacmans" not in plan_ensemble:
-            pass
-        else:
-            possibilite_p.append((plan_ensemble["pacmans"][0][0],plan_ensemble["pacmans"][0][1],direction))
-
-        if plan_ensemble is None or "objets" not in plan_ensemble:
-            pass
-        else:
-            for i in range(len(plan_ensemble["objets"])) :
-                possibilite_o.append((plan_ensemble["objets"][i][0], plan_ensemble["objets"][i][1], direction))
-            
-        if plan_ensemble is None or "fantomes" not in plan_ensemble:
-            pass
-        else:
-            possibilite_f.append((plan_ensemble["fantomes"][0][0], plan_ensemble["fantomes"][0][1],direction))
+            (ma_ligne_p,ma_colonne_p,nom_p)=(int(l[3]),int(l[4]),l[-1])
+    (possibilite_p_p, possibilite_p_o, possibilite_p_f) = calcul_possibilite(le_plateau, ma_ligne_p, ma_colonne_p)
     
+    
+    #possibilite fantome
+    les_joueurs_f=les_joueurs.split('\n') 
+    for l in les_joueurs_f:
+        l=l.split(";")
+        if l[0]==ma_couleur:
+            (ma_ligne_f,ma_colonne_f,nom_f)=(int(l[5]),int(l[6]),l[-1])
+    (possibilite_f_p, possibilite_f_o, possibilite_f_f) = calcul_possibilite(le_plateau, ma_ligne_f, ma_colonne_f)
+   
     #IA PACMAN (les meilleurs)
     dir_a_bannir = ""
-    """for (distance,_, direction) in possibilite_f :
-            if distance < 3 :
-                dir_a_bannir+=direction"""
+    for (distance,nom_f, direction) in possibilite_p_f :
+            if distance < 3 and nom_f.upper() != nom_p :
+                dir_a_bannir+=direction
 
-    priorite = {const.GLOUTON : 1, const.VALEUR : 2, const.PASSEMURAILLE : 3, const.IMMOBILITE : 4, const.TELEPORTATION : 5, const.VITAMINE : 100}
-    
+    priorite = {const.GLOUTON : 1, const.VALEUR : 2, const.PASSEMURAILLE : 3, const.IMMOBILITE : 4, const.TELEPORTATION : 5, const.VITAMINE : 6}
+
     meilleure_dist = None
-    prio_meilleur  = 200
-    for (distance,objet,direction) in possibilite_o :
-        print(distance,objet,direction)
-        ordre_prio = priorite[objet]   
-        print(ordre_prio)
-        if meilleure_dist is None or ordre_prio*distance < prio_meilleur*meilleure_dist  :  #and direction not in dir_a_bannir
+    prio_meilleur  = None
+    for (distance,objet,direction) in possibilite_p_o :
+        ordre_prio = priorite[objet]
+        if meilleure_dist is None or ordre_prio*distance < prio_meilleur*meilleure_dist and direction not in dir_a_bannir :
             meilleure_dist = distance
             prio_meilleur = ordre_prio
             dir_p = direction
-    print(dir_p)
 
     #IA Fantome(de base)
-    
-    meilleur_pacman=min(possibilite_p)
-    dir_f = meilleur_pacman[2]
+    def aller_vers_fantome():
+        meilleur_pacman=min(possibilite_f_p)
+        dir_f = meilleur_pacman[2]
+        return dir_f
 
     #IA Fantome (plus inteligent)
+
+    def groupement_de_valeurs(valeurs,max):
+        for valeur in range(len(valeurs)-1):
+            if valeurs[valeur]
     
     #le calcul est: ((chaque bonus multiplié par son coef)/distance avec tout les bonus)*nombre bonus
-    """arrivé=False
-    if not arrivé:
-        calque=plateau.inondation(plan,(ma_ligne,ma_colonne))
-        numéro_cases=[]
-        nombre=0
-        for i in range(plateau.get_nb_lignes(plan)):
-            for j in range(plateau.get_nb_colonnes(plan)):
-                if const.LES_OBJETS in plateau.get_objet(plateau.get_case(plan,(i,j))):
-                    valeur_bonus=0
-                    distance=0
-                    for bonus in plateau.get_objet(plateau.get_case(plan,(i,j))):
-                        valeur_bonus*=coeficients[bonus]
-                    for bonus in plateau.get_objet(plateau.get_case(plan,(i,j))):
-                        distance+=abs(calque[i][j]-calque[bonus[0][bonus[1]]])
-                    valeur=((valeur_bonus)/distance)*
-                    numéro_cases.append(valeur)
-                    nombre=0
-        meilleur=max(numéro_cases)
-        meilleur_pacman=min(possibilite_p)
-        dir_f = meilleur_pacman[2]
-        """
+    calque=plateau.inondation(le_plateau,(ma_ligne_f,ma_colonne_f))
+    numéro_cases=[]
+    bonus_a_proximité=plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],1000)
+    if "objets" in bonus_a_proximité:
+            for bonus in bonus_a_proximité:
+
+            if calque[i][j] is not None:
+                possib = plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],3)
+                bonus_a_proximité = possib["objets"]
+                valeur_bonus=1
+                distance=0
+                nombre=0
+                for bonus in bonus_a_proximité:
+                    valeur_bonus*=coeficient[bonus[1]]
+                    distance+=abs(calque[i][j]-bonus[0])
+                    nombre+=1
+                if distance==0:
+                    return dir_p+aller_vers_fantome()
+                valeur=(((valeur_bonus)/distance)*nombre)
+                numéro_cases.append((valeur,(i,j)))
+    
+    
+    meilleur=max(numéro_cases)
+    calque_depuis_arrivé=plateau.inondation(le_plateau,(meilleur[1]))
+    minim=float("inf")
+    
+    
+    if calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f] is not None and calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f]
+        dir_f="S"
+    if calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f] is not None and calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f]
+        dir_f="N"
+    if calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1] is not None and calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1]
+        dir_f="E"
+    if calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1] is not None and calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1]
+        dir_f="O"
     
     return dir_p+dir_f
-
-    
-
-            
-
-
-    
-    
-    
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()  
