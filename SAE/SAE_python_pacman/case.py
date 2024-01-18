@@ -1,203 +1,209 @@
+# coding: utf-8
 """
             SAE1.02 PACMAN IUT'O
          BUT1 Informatique 2023-2024
 
-        Module case.py
-        Ce module contient l'implémentation des cases du plateau de jeu
+        Module client_joueur.py
+        Ce module contient le programme principal d'un joueur
+        il s'occupe des communications avec le serveur
+            - envois des ordres
+            - recupération de l'état du jeu
+        la fonction mon_IA est celle qui contient la stratégie de
+        jeu du joueur.
+
 """
+import argparse
+import random
+import client
 import const
+import plateau
+import case
+import joueur
+from math import *
+prec='X'
 
-def Case(mur=False, objet=const.AUCUN, pacmans_presents=None, fantomes_presents=None):
-    """Permet de créer une case du plateau
-
-    Args:
-        mur (bool, optional): un booléen indiquant si la case est un mur ou un couloir.
-                Defaults to False.
-        objet (str, optional): un caractère indiquant l'objet qui se trouve sur la case.
-                const.AUCUN indique qu'il n'y a pas d'objet sur la case. Defaults to const.AUCUN.
-        pacmans_presents (set, optional): un ensemble indiquant la liste des pacmans
-                se trouvant sur la case. Defaults to None.
-        fantomes_presents (set, optional): un ensemble indiquant la liste des fantomes
-                se trouvant sur la case. Defaults to None.
-
-    Returns:
-        dict: un dictionnaire représentant une case du plateau
+def calcul_possibilite(p_plateau, ligne, colonne):
+    """Fonction permettant de calculer toutes les possibilités de chemin vers les autres pacmans, 
+        les objets et les fantômes en fonction de la position (ligne, colonne)
+        Args : 
+            p_plateau (dict): un plateau
+            ligne (int) : la position de la ligne
+            colonne (int) : la position de la colonne
+        Returns :
+            tuple : les 3 possiblités (possibilite_p, possibilite_o, possibilite_f) respectivement
+                    pour les pacmans, les objets et les fantômes
     """
+    possibilite_p = []
+    possibilite_o = []
+    possibilite_f = []
+    for direction in const.DIRECTIONS:
+        plan_ensemble=plateau.analyse_plateau(p_plateau,(ligne, colonne),direction,100)
+        #if plan_ensemble["pacmans"][0][1].upper()!=nom:
+        if  plan_ensemble is None or "pacmans" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["pacmans"])) :
+                possibilite_p.append((plan_ensemble["pacmans"][i][0],plan_ensemble["pacmans"][i][1],direction))
 
-    Case = {"mur": mur, "objet" : objet, "pacmans_presents": pacmans_presents, "fantomes_presents": fantomes_presents}
-    return Case
-
-
-
-def est_mur(case):
-    """indique si la case est un mur ou non
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        bool: True si la case est un mur et False sinon
-    """
-    return case["mur"] 
-
-
-
-def get_objet(case):
-    """retourne l'identifiant de l'objet qui se trouve sur la case. const.AUCUN indique l'absence d'objet.
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        str: l'identifiant de l'objet qui se trouve sur la case.
-    """
-    return case["objet"]
-
-
-def get_pacmans(case):
-    """retourne l'ensemble des pacmans qui sont sur la case
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        set: l'ensemble des identifiants de pacmans présents su la case.
-    """
-    if case["pacmans_presents"] is None:    # S'il n'y a pas de pacman(s) sur la case
-        return set()
-    return case["pacmans_presents"]
-
-def get_fantomes(case):
-    """retourne l'ensemble des fantomes qui sont sur la case
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        set: l'ensemble des identifiants de fantomes présents su la case.
-    """
-    if case["fantomes_presents"] is None:    # S'il n'y a pas de fantôme(s) sur la case
-        return set()
-    return case["fantomes_presents"]
-
-
-def get_nb_pacmans(case):
-    """retourne le nombre de pacmans présents sur la case
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        int: le nombre de pacmans présents sur la case.
-    """
-    if case["pacmans_presents"] is None:
-        return 0
-    return len(case["pacmans_presents"])
-
-def get_nb_fantomes(case):
-    """retourne le nombre de fantomes présents sur la case
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        int: le nombre de fantomes présents sur la case.
-    """
-    if case["fantomes_presents"] is None:
-        return 0
-    return len(case["fantomes_presents"])
-
-def poser_objet(case, objet):
-    """Pose un objet sur la case. Si un objet était déjà présent ce dernier disparait.
-        Si la case est un mur, l'objet n'est pas mis dans la case.
-
-    Args:
-        case (dict): la case considérée
-        objet (str): identifiant d'objet. const.AUCUN indiquant que plus aucun objet se
-                trouve sur la case.
-    """
-    if not(est_mur(case)):            
-        case["objet"] = objet        
-    return case
-
-
-def prendre_objet(case):
-    """Enlève l'objet qui se trouve sur la case et retourne l'identifiant de cet objet.
-        Si aucun objet se trouve sur la case la fonction retourne const.AUCUN.
-
-    Args:
-        case (dict): la case considérée
-
-    Returns:
-        char: l'identifiant de l'objet qui se trouve sur la case.
-    """
-    obj = case["objet"]
-    case["objet"] = const.AUCUN    # On rend l'objet vide
-    return obj
-    
-
-def poser_pacman(case, pacman):
-    """Pose un nouveau pacman sur la case.
-    Si le pacman était déjà sur la case la fonction ne fait rien
-    Si la case est un mur, le pacman est quand-même posé (pouvoir de passe-muraille)
-
-    Args:
-        case (dict): la case considérée
-        pacman (str): identifiant du pacman à ajouter sur la case
-    """
-    if get_pacmans(case) != pacman:
-        if case["pacmans_presents"] is None:        # S'il n'y a pas de pacman(s)
-            case["pacmans_presents"] = set(pacman)  # On créé un ensemble avec le pacman
-        case["pacmans_presents"].add(pacman)        # sinon on l'ajoute à l'ensemble déjà créé
-
-
-
-def prendre_pacman(case, pacman):
-    """Enlève le pacman dont l'identifiant est passé en paramètre de la case.
-        La fonction retourne True si le joueur était bien sur la case et False sinon.
-
-    Args:
-        case (dict): la case considérée
-        pacman (str): l'identifiant du pacman à enlever
-
-    Returns:
-        bool: True si le joueur était bien sur la case et False sinon.
-    """
-    res=False
-    if pacman in get_pacmans(case):
-        res=True
-        case["pacmans_presents"].remove(pacman)
-    return res
+        if plan_ensemble is None or "objets" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["objets"])) :
+                possibilite_o.append((plan_ensemble["objets"][i][0], plan_ensemble["objets"][i][1], direction))
             
-
-def poser_fantome(case, fantome):
-    """Pose un nouveau fantome sur la case
-        si le fantome était déjà sur la case, la fonction ne fait rien
-        si la case est un mur la fonction ne fait rien
-
-    Args:
-        case (dict): la case considérée
-        fantome (str): identifiant du fantome à ajouter sur la case
-    """
-    if case['fantomes_presents'] != fantome and not(est_mur(case)):     
-        if case['fantomes_presents'] is None:                              # S'il n'y a pas de fantome(s)
-            case['fantomes_presents'] = set(fantome)                       # On créé un ensemble avec le fantome
-        case['fantomes_presents'].add(fantome)                             # sinon on l'ajoute à l'ensemble déjà créé
+        if plan_ensemble is None or "fantomes" not in plan_ensemble:
+            pass
+        else:
+            for i in range(len(plan_ensemble["fantomes"])) :
+                possibilite_f.append((plan_ensemble["fantomes"][i][0], plan_ensemble["fantomes"][i][1],direction))
+                
+    return (possibilite_p, possibilite_o, possibilite_f)
 
 
-def prendre_fantome(case, fantome):
-    """Enlève le fantome dont l'identifiant est passé en paramètre de la case.
-        La fonction retourne True si le fantome était bien sur la case et False sinon.
+
+def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
+    """ Cette fonction permet de calculer les deux actions du joueur de couleur ma_couleur
+        en fonction de l'état du jeu décrit par les paramètres. 
+        Le premier caractère est parmi XSNOE X indique pas de peinture et les autres
+        caractères indique la direction où peindre (Nord, Sud, Est ou Ouest)
+        Le deuxième caractère est parmi SNOE indiquant la direction où se déplacer.
 
     Args:
-        case (dict): la case considérée
-        fantome (str): l'identifiant du fantome à enlever
-
+        ma_couleur (str): un caractère en majuscule indiquant la couleur du jeur
+        carac_jeu (str): une chaine de caractères contenant les caractéristiques
+                                   de la partie séparées par des ;
+             duree_act;duree_tot;reserve_init;duree_obj;penalite;bonus_touche;bonus_rechar;bonus_objet           
+        plan (str): le plan du plateau comme comme indiqué dans le sujet
+        les_joueurs (str): le liste des joueurs avec leur caractéristique (1 joueur par ligne)
+        couleur;reserve;nb_cases_peintes;objet;duree_objet;ligne;colonne;nom_complet
+    
     Returns:
-        bool: True si le fantome était bien sur la case et False sinon.
+        str: une chaine de deux caractères en majuscules indiquant la direction de peinture
+            et la direction de déplacement
+
     """
-    res=False
-    if fantome in get_fantomes(case):
-        res=True
-        case['fantomes_presents'].remove(fantome)
-    return res
+     
+    # decodage des informations provenant du serveur
+    joueurs={}
+    for ligne in les_joueurs.split('\n'):
+        lejoueur=joueur.joueur_from_str(ligne)
+        joueurs[joueur.get_couleur(lejoueur)]=lejoueur
+    le_plateau=plateau.plateau(plan)
+
+    # Création des possibilités
+    
+    #possibilite pacman
+    les_joueurs_p=les_joueurs.split('\n') 
+    for l in les_joueurs_p:
+        l=l.split(";")
+        if l[0]==ma_couleur:
+            (ma_ligne_p,ma_colonne_p,nom_p)=(int(l[3]),int(l[4]),l[-1]) # on récupère la position et le nom du pacman
+    (possibilite_p_p, possibilite_p_o, possibilite_p_f) = calcul_possibilite(le_plateau, ma_ligne_p, ma_colonne_p) # On calcule tout les chemins possible du pacman pour rejoindre un pacman, un objet ou un fantôme
+    
+    
+    #possibilite fantome
+    les_joueurs_f=les_joueurs.split('\n') 
+    for l in les_joueurs_f:
+        l=l.split(";")
+        if l[0]==ma_couleur:
+            (ma_ligne_f,ma_colonne_f,nom_f)=(int(l[5]),int(l[6]),l[-1]) # on récupère la position et le nom du fantôme
+    (possibilite_f_p, possibilite_f_o, possibilite_f_f) = calcul_possibilite(le_plateau, ma_ligne_f, ma_colonne_f) # On calcule tout les chemins possible du fantôme pour rejoindre un pacman, un objet ou un fantôme
+   
+    #IA PACMAN 
+
+    # permet de définir les directions pour lesquels il y a un fantôme d'une équipe adverse : 
+    dir_a_bannir = ""
+    for (distance,nom_f, direction) in possibilite_p_f :
+            if distance < 2 and nom_f.upper() != nom_p :  
+                dir_a_bannir+=direction                  
+
+    priorite = {const.GLOUTON : 1, const.VALEUR : 2, const.PASSEMURAILLE : 3, const.IMMOBILITE : 4, const.TELEPORTATION : 5, const.VITAMINE : 6}
+
+    meilleure_dist = None
+    prio_meilleur  = None
+    for (distance,objet,direction) in possibilite_p_o :
+        ordre_prio = priorite[objet]
+        if meilleure_dist is None or ordre_prio*distance < prio_meilleur*meilleure_dist and direction not in dir_a_bannir :
+            meilleure_dist = distance
+            prio_meilleur = ordre_prio
+            dir_p = direction
+
+    #IA Fantome(de base)
+    def aller_vers_fantome():
+        meilleur_pacman=min(possibilite_f_p)
+        dir_f = meilleur_pacman[2]
+        return dir_f
+
+    #IA Fantome (plus inteligent)
+
+    def groupement_de_valeurs(valeurs,max):
+        res=[]
+        for valeur in range(len(valeurs)-1):
+            if valeurs[valeur]-valeurs[valeur+1]<=max:
+
+    
+    #le calcul est: ((chaque bonus multiplié par son coef)/distance avec tout les bonus)*nombre bonus
+    calque=plateau.inondation(le_plateau,(ma_ligne_f,ma_colonne_f))
+    bonus_a_proximité=plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],1000)
+    if "objets" in bonus_a_proximité:
+            distance_objets=[]
+            for bonus in bonus_a_proximité:
+                if bonus[1]!=const.VITAMINE:
+                    distance_objets.append(bonus[0])
+            ou_aller=groupement_de_valeurs(distance_objets,5)
+            
+            if calque[i][j] is not None:
+                possib = plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],3)
+                bonus_a_proximité = possib["objets"]
+                valeur_bonus=1
+                distance=0
+                nombre=0
+                for bonus in bonus_a_proximité:
+                    valeur_bonus*=coeficient[bonus[1]]
+                    distance+=abs(calque[i][j]-bonus[0])
+                    nombre+=1
+                if distance==0:
+                    return dir_p+aller_vers_fantome()
+                valeur=(((valeur_bonus)/distance)*nombre)
+                numéro_cases.append((valeur,(i,j)))
+    
+    
+    meilleur=max(numéro_cases)
+    calque_depuis_arrivé=plateau.inondation(le_plateau,(meilleur[1]))
+    minim=float("inf")
+    
+    
+    if calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f] is not None and calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f]
+        dir_f="S"
+    if calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f] is not None and calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f-1][ma_colonne_f]
+        dir_f="N"
+    if calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1] is not None and calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f][ma_colonne_f+1]
+        dir_f="E"
+    if calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1] is not None and calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1]<minim:
+        minim=calque_depuis_arrivé[ma_ligne_f+1][ma_colonne_f-1]
+        dir_f="O"
+    
+    return dir_p+dir_f
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser()  
+    parser.add_argument("--equipe", dest="nom_equipe", help="nom de l'équipe", type=str, default='Non fournie')
+    parser.add_argument("--serveur", dest="serveur", help="serveur de jeu", type=str, default='localhost')
+    parser.add_argument("--port", dest="port", help="port de connexion", type=int, default=1111)
+    
+    args = parser.parse_args()
+    le_client=client.ClientCyber()
+    le_client.creer_socket(args.serveur,args.port)
+    le_client.enregistrement(args.nom_equipe,"joueur")
+    ok=True
+    while ok:
+        ok,id_joueur,le_jeu=le_client.prochaine_commande()
+        if ok:
+            carac_jeu,le_plateau,les_joueurs=le_jeu.split("--------------------\n")
+            actions_joueur=mon_IA(id_joueur,carac_jeu,le_plateau,les_joueurs[:-1])
+            le_client.envoyer_commande_client(actions_joueur)
+            # le_client.afficher_msg("sa reponse  envoyée "+str(id_joueur)+args.nom_equipe)
+    le_client.afficher_msg("terminé")
