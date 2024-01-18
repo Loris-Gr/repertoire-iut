@@ -130,16 +130,21 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     #IA Fantome (plus inteligent)
 
     def groupement_de_valeurs(valeurs,max):
+        res=[]
         for valeur in range(len(valeurs)-1):
-            if valeurs[valeur]
+            if valeurs[valeur]-valeurs[valeur+1]<=max:
+
     
     #le calcul est: ((chaque bonus multiplié par son coef)/distance avec tout les bonus)*nombre bonus
     calque=plateau.inondation(le_plateau,(ma_ligne_f,ma_colonne_f))
-    numéro_cases=[]
     bonus_a_proximité=plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],1000)
     if "objets" in bonus_a_proximité:
+            distance_objets=[]
             for bonus in bonus_a_proximité:
-
+                if bonus[1]!=const.VITAMINE:
+                    distance_objets.append(bonus[0])
+            ou_aller=groupement_de_valeurs(distance_objets,5)
+            
             if calque[i][j] is not None:
                 possib = plateau.analyse_plateau(le_plateau,(i,j),plateau.directions_possibles(le_plateau,(i,j))[0],3)
                 bonus_a_proximité = possib["objets"]
