@@ -1,2 +1,2 @@
 # repertoire-iut
-pour travail
+Pour le travail
